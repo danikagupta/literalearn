@@ -13,39 +13,64 @@
 # limitations under the License.
 
 import streamlit as st
-from streamlit.logger import get_logger
+from audio_recorder_streamlit import audio_recorder
+import os
+import whisper
 
-LOGGER = get_logger(__name__)
+def transcribe_audio(file_path):
+    # Load the pre-trained Whisper model
+    model = whisper.load_model("base")  # You can choose other models like "small", "medium", "large"
+
+    # Load the audio file
+    audio = whisper.load_audio(file_path)
+    audio = whisper.pad_or_trim(audio)
+
+    # (Optional) Print the detected language
+    # Mel spectrogram generation (optional to show the language detection)
+    mel = whisper.log_mel_spectrogram(audio).to(model.device)
+    _, probs = model.detect_language(mel)
+    print(f"Detected language: {max(probs, key=probs.get)}")
+
+    # Transcribe the audio
+    options = whisper.DecodingOptions()
+    result = model.transcribe(mel, options)
+
+    # Return the transcription
+    return result["text"]
+
+#
+# Main code
+#
+
+path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
+audio_bytes = audio_recorder(text="")
+if audio_bytes:
+    st.markdown("Just saw fresh audio bytes!")
+    st.audio(audio_bytes, format="audio/wav")
+    with open(path_myrecording, mode='bw') as f:
+        f.write(audio_bytes)
+        f.close()
+    transcription = transcribe_audio(path_myrecording)
+    st.markdown("Transcription:", transcription)
+
+aaa="""
 
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
-
-    st.write("# Welcome to Streamlit! 👋")
-
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+audio_bytes = audio_recorder(
+    text="",
+    recording_color="#e8b62c",
+    neutral_color="#6aa36f",
+    icon_name="user",
+    icon_size="6x",
+)
 
 
-if __name__ == "__main__":
-    run()
+
+from st_audiorec import st_audiorec
+
+wav_audio_data = st_audiorec()
+
+if wav_audio_data is not None:
+    st.audio(wav_audio_data, format='audio/wav') 
+st.write("# Welcome to Streamlit! 👋")
+"""
