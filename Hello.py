@@ -1,23 +1,9 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
 from audio_recorder_streamlit import audio_recorder
 import os
 from openai import OpenAI
 import nltk
-from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from nltk.tokenize import word_tokenize
 
 
@@ -53,7 +39,8 @@ def bleu(hypothesis, reference):
   print(f"Reference tokens: {reference_tokens}, hypothesis tokens: {hypothesis_tokens}, reference: {reference}, hypothesis: {hypothesis}")
   st.markdown(f"Reference tokens: {reference_tokens}, hypothesis tokens: {hypothesis_tokens}, reference: {reference}, hypothesis: {hypothesis}")
   # Calculate the BLEU score.
-  bleu_score = sentence_bleu([reference_tokens], hypothesis_tokens)
+  smoothie=SmoothingFunction().method1
+  bleu_score = sentence_bleu([reference_tokens], hypothesis_tokens,smoothing_function=smoothie)
 
   return bleu_score
 
