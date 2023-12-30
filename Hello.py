@@ -17,8 +17,9 @@ from audio_recorder_streamlit import audio_recorder
 import os
 from openai import OpenAI
 
+
 def transcribe_audio(file_path,language_iso):
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
     audio_file = open(file_path, "rb")
     transcript = client.audio.transcriptions.create(
