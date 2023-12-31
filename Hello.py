@@ -5,6 +5,7 @@ from openai import OpenAI
 import nltk
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from nltk.tokenize import word_tokenize
+import pandas as pd
 
 
 def transcribe_audio(file_path,language_iso):
@@ -24,15 +25,6 @@ def transcribe_audio(file_path,language_iso):
 
 
 def bleu(hypothesis, reference):
-  """Computes the BLEU score between a hypothesis and a reference.
-
-  Args:
-    hypothesis: A string containing the hypothesis text.
-    reference: A string containing the reference text.
-
-  Returns:
-    A float representing the BLEU score.
-  """
   # Tokenize the hypothesis and reference strings.
   hypothesis_tokens = word_tokenize(hypothesis)
   reference_tokens = word_tokenize(reference)
@@ -41,23 +33,40 @@ def bleu(hypothesis, reference):
   # Calculate the BLEU score.
   smoothie=SmoothingFunction().method1
   bleu_score = sentence_bleu([reference_tokens], hypothesis_tokens,smoothing_function=smoothie)
-
   return bleu_score
+
+@st.cache_data
+def getCSV():
+    return pd.read_csv("assets/sentences.csv")
+
+def getSentence(language,difficulty):
+    df=getCSV()
+    with st.sidebar.expander("Show more"):
+      st.dataframe(df)
+      df=df[df["language"]==language]
+      df=df[df["difficulty"]==difficulty]
+      sentence=df.sample().iloc[0]["sentence"]
+      st.markdown(f"## Sentence={sentence}")
+    return sentence
+    
 
 #
 # Main code
 #
-languages={"Hindi":"hi","English":"en","Malayalam":"ml"}
-sentences={"Hindi":"आप कैसे हैं?","English":"How are you?","Malayalam":"നിങ്ങൾ എങ്ങനെ ഉണ്ട്?"}
+languages={"हिंदी":"hi","English":"en","മലയാളം":"ml"}
+main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക"}
 
 nltk_data_path = os.path.join(os.getcwd(),"nltk_data")
 if nltk_data_path not in nltk.data.path:
     nltk.data.path.append(nltk_data_path)
 
-language_select=st.selectbox("Select language",options=languages.keys())
+st.sidebar.title("LiteraLearn")
+st.sidebar.image("assets/icon128px-red.png")
+language_select=st.sidebar.selectbox("Language",options=languages.keys())
 language_iso=languages[language_select]
-sentence=sentences[language_select]
-st.markdown(f"# Speak slowly and clearly (needs translation)")
+instruction=main_instruction[language_iso]
+sentence=getSentence(language_iso,1)
+st.markdown(f"## {instruction}")
 st.markdown(f"{sentence}")
 
 path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
