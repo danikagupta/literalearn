@@ -6,9 +6,11 @@ import nltk
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from nltk.tokenize import word_tokenize
 import pandas as pd
+from google.cloud import speech
+from google.oauth2 import service_account
 
 
-def transcribe_audio(file_path,language_iso):
+def transcribe_audio_whisper(file_path,language_iso):
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
     audio_file = open(file_path, "rb")
@@ -18,10 +20,38 @@ def transcribe_audio(file_path,language_iso):
         language=language_iso,
         response_format="text"
     )
- 
     print(f"Transcript: {transcript}")
     return transcript
 
+def transcribe_audio(file_path,language_iso):
+    gcs_credentials = st.secrets["connections"]["gcs"]
+    credentials = service_account.Credentials.from_service_account_info(gcs_credentials)
+    client = speech.SpeechClient(credentials=credentials)
+    with open(file_path, 'rb') as audio_file:
+        content = audio_file.read()
+    # Configure the request with the language and audio file
+    audio = speech.RecognitionAudio(content=content)
+    config = speech.RecognitionConfig(
+        #encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        language_code=language_iso,
+        audio_channel_count=2,
+    )
+    # Send the request to Google's Speech-to-Text API
+    google_response = client.recognize(config=config, audio=audio)
+    response=""
+    for result in google_response.results:
+        response+=result.alternatives[0].transcript
+
+    print(f"Response: {google_response}")
+    print(f"Response.results: {google_response.results}")
+    st.sidebar.markdown(f"Response: {google_response}")
+    # Print the transcription of the first alternative of the first result
+    for result in google_response.results:
+        print(f"Result: {result}")
+        print(f"Result.alternatives: {result.alternatives}")
+        print(f"Result.alternatives[0]: {result.alternatives[0]}")
+        print("Transcription: {}".format(result.alternatives[0].transcript))
+    return response
 
 
 def bleu(hypothesis, reference):
@@ -49,9 +79,11 @@ def getSentence(language,difficulty):
       st.markdown(f"## Sentence={sentence}")
     return sentence
     
-
 #
 # Main code
+#
+# st.sidebar.write(f"Secrets={st.secrets}")
+st.sidebar.write(st.secrets.keys())
 #
 languages={"हिंदी":"hi","English":"en","മലയാളം":"ml"}
 main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക"}

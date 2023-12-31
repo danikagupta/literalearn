@@ -9,3 +9,6 @@ openai
 audio-recorder-streamlit
 git+https://github.com/openai/whisper.git
 nltk
+gcsfs
+st-files-connection
+google-cloud-speech
