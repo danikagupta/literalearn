@@ -1,5 +1,5 @@
-language,difficulty,sentence
-hi,1,"आप कैसे हैं"
-en,1,"How are you"
-ml,1,"നിങ്ങൾ എങ്ങനെ ഉണ്ട്"
-si,1,"ඔයාට කොහොම ද"
+language,difficulty,sentence,audiofile
+hi,1,"आप कैसे हैं",howAreYou_hi.wav
+en,1,"How are you",howAreYou_en.wav
+ml,1,"നിങ്ങൾ എങ്ങനെ ഉണ്ട്",howAreYou_en.wav
+si,1,"ඔයාට කොහොම ද",howAreYou_si.wav

@@ -8,6 +8,7 @@ from nltk.tokenize import word_tokenize
 import pandas as pd
 from google.cloud import speech
 from google.oauth2 import service_account
+import base64
 
 
 def transcribe_audio_whisper(file_path,language_iso):
@@ -69,21 +70,30 @@ def bleu(hypothesis, reference):
 def getCSV():
     return pd.read_csv("assets/sentences.csv")
 
+def generate_download_link(audio_file_path):
+    with open(audio_file_path, "rb") as file:
+        base64_file = base64.b64encode(file.read()).decode()
+    href = f'<a href="data:file/wav;base64,{base64_file}" download="your_audio.wav"><img src="https://img.icons8.com/emoji/48/000000/play-button-emoji.png"/></a>'
+    return href
+
+
 def getSentence(language,difficulty):
     df=getCSV()
     with st.sidebar.expander("Show more"):
       st.dataframe(df)
       df=df[df["language"]==language]
       df=df[df["difficulty"]==difficulty]
-      sentence=df.sample().iloc[0]["sentence"]
+      rec=df.sample().iloc[0]
+      sentence=rec["sentence"]
+      audiofile=rec["audiofile"]
       st.markdown(f"## Sentence={sentence}")
-    return sentence
+      fname=os.path.join(os.getcwd(),"audiofiles",audiofile)
+      af = open(fname, 'rb')
+      audiobytes = af.read()
+    return sentence,audiobytes
     
 #
 # Main code
-#
-# st.sidebar.write(f"Secrets={st.secrets}")
-st.sidebar.write(st.secrets.keys())
 #
 languages={"हिंदी":"hi","English":"en","മലയാളം":"ml","සිංහල":"si"}
 main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}
@@ -97,9 +107,11 @@ st.sidebar.image("assets/icon128px-red.png")
 language_select=st.sidebar.selectbox("Language",options=languages.keys())
 language_iso=languages[language_select]
 instruction=main_instruction[language_iso]
-sentence=getSentence(language_iso,1)
+sentence,audiobytes=getSentence(language_iso,1)
 st.markdown(f"## {instruction}")
-st.markdown(f"{sentence}")
+col1,col2=st.columns(2)
+col1.markdown(f"{sentence}")
+col2.audio(audiobytes, format="audio/wav")
 
 path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
 audio_bytes = audio_recorder(text="")
