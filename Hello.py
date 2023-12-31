@@ -85,8 +85,8 @@ def getSentence(language,difficulty):
 # st.sidebar.write(f"Secrets={st.secrets}")
 st.sidebar.write(st.secrets.keys())
 #
-languages={"हिंदी":"hi","English":"en","മലയാളം":"ml"}
-main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക"}
+languages={"हिंदी":"hi","English":"en","മലയാളം":"ml","සිංහල":"si"}
+main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}
 
 nltk_data_path = os.path.join(os.getcwd(),"nltk_data")
 if nltk_data_path not in nltk.data.path:
