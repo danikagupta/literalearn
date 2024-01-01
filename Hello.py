@@ -9,6 +9,7 @@ import pandas as pd
 from google.cloud import speech
 from google.oauth2 import service_account
 import base64
+import json
 
 
 def transcribe_audio_whisper(file_path,language_iso):
@@ -66,7 +67,38 @@ def bleu(hypothesis, reference):
   bleu_score = sentence_bleu([reference_tokens], hypothesis_tokens,smoothing_function=smoothie)
   return bleu_score
 
-@st.cache_data
+def function_print_similarity_score(str1: str, str2: str) -> str:
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+    functions = [{
+        "name": "print_similarity_score",
+        "description": "A function that prints the similarity score of two strings",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "similarity_score": {
+                    "type": "integer",
+                    "enum": [1,2,3,4,5,6,7,8,9,10],
+                    "description": "The similarity score."
+                },
+            }, "required": ["similarity_score"],
+        }
+    }]
+    llm_input=f"""
+    You are a language reviewer responsible for reviewing the similarity of two sentences.
+    Please note that the specifc words and word-order are important, not just the meaning.
+    On a scale of 1-10, with 10 being the most similar, how similar are these: "{str1}", and "{str2}".
+    """
+    messages = [{"role": "user", "content": llm_input}]
+    response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, functions=functions, function_call={"name": "print_similarity_score"})
+    #print(f"Response is: {response}")
+    function_call = response. choices [0].message.function_call
+    #print(f"Function call is: {function_call}")
+    argument = json.loads(function_call.arguments)
+    #print(f"Response function parameters are: {argument}")
+    print(f"For inputs {str1} and {str2}, the similarity score is: {argument}")
+    return argument
+
+# Removing for the time-being as we change the input file data @ st.cache_data
 def getCSV():
     return pd.read_csv("assets/sentences.csv")
 
@@ -123,5 +155,7 @@ if audio_bytes:
     transcription = transcribe_audio(path_myrecording,language_iso)
     st.markdown(f"Transcription: {transcription}")
     sc=bleu(transcription,sentence)
+    sc2=function_print_similarity_score(transcription,sentence)
     st.markdown(f"BLEU score: {sc}")
+    st.markdown(f"OpenAI score: {sc2}")
  
