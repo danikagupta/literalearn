@@ -2,12 +2,10 @@ import streamlit as st
 from authlib.integrations.requests_client import OAuth2Session
 import urllib.parse
 import pandas as pd
+import requests
 
 import cookiestore
-
-st.markdown("# Obsolete 99 google sign on")
-
-aaa="""   
+   
 
 # Replace these with your client details
 client_id = st.secrets["client_id"]
@@ -22,7 +20,7 @@ st.sidebar.markdown(f"Secrets:\n {st.secrets}")
 st.sidebar.markdown(f"State:\n {st.session_state}")
 st.sidebar.markdown(f"Params:\n {st.experimental_get_query_params()}")
 
-import requests
+
 
 def exchange_code_for_token(code):
     token_url = 'https://oauth2.googleapis.com/token'
@@ -52,11 +50,6 @@ def get_user_info(access_token):
         raise Exception("Failed to retrieve user info: " + user_info.get('error_description', ''))
     return user_info
 
-def nav_to(url):
-    nav_script = """
-        <meta http-equiv="refresh" content="0; url='%s'">
-    """ % (url)
-    st.write(nav_script, unsafe_allow_html=True)
 
 def get_sheet():
     import requests
@@ -73,27 +66,39 @@ def get_sheet():
     st.dataframe(df)
     return df
 
-def process_user_info(user_info):
+def process_user_info(user_info,debugging):
     df=get_sheet()
     subId=user_info['sub']
     df=df[df['ID']==subId]
     st.sidebar.data_editor(df)
     if(len(df)>0):
-        st.sidebar.write("You are NOW in the list")
-        st.sidebar.dataframe(df)
+        if debugging:
+            st.sidebar.write("You are in the list")
+            st.sidebar.dataframe(df)
     else:
-        st.sidebar.write("You are not in the list")
-        st.sidebar.dataframe(df)
+        if debugging:
+            st.sidebar.write("You are not in the list")
+            st.sidebar.dataframe(df)
         url = "https://v1.nocodeapi.com/gprof/google_sheets/ULJTWlUlxDbMDOzR"
         params = {"tabId": "Sheet1"}
         data = [[subId,user_info['name'],'hi','en',2,2]]
         r = requests.post(url = url, params = params, json = data)
         result = r.json()
-        print(result)
+        if debugging:
+            print(result)
 
-def main():
-    st.title('OAuth with Streamlit 99 GOOGLE SIGN ON')
-    
+def main(debugging=False):
+    if debugging:
+        st.title('OAuth with Streamlit SIGNON-PY')
+    usercookie_value=cookiestore.cookie_manager.get(cookie=cookiestore.usercookie_name)
+    if usercookie_value is None:
+        if debugging:
+            st.write("No user found")
+    else:
+        if debugging:
+            st.write(f"User found: {usercookie_value}")
+        process_user_info({'sub':usercookie_value,'name':usercookie_value})
+        return
 
     # Initialize the session
     session = OAuth2Session(client_id, client_secret, scope=scope, redirect_uri=redirect_uri)
@@ -101,8 +106,10 @@ def main():
     # Check if the user is logged in
     if 'user_info' in st.session_state:
         user_info = st.session_state['user_info']
-        st.write(f"1. Welcome {user_info['name']}!")
-        process_user_info(user_info)
+        if debugging:
+            st.write(f"1. Welcome {user_info['name']}!")
+        cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['sub'])
+        process_user_info(user_info,debugging)
         #XXX
         # Do the main thing here
     elif 'scope' in st.experimental_get_query_params():
@@ -112,8 +119,9 @@ def main():
         st.session_state['token'] = token
         st.session_state['user_info'] = user_info
         st.session_state['states_seen'] = "Passed 2"
-        cookiestore.cookie_manager.set(cookie='LiteraLearnUser',value=user_info['name'])
-        st.write("2. Welcome, ", user_info['name'])
+        cookiestore.cookie_manager.set(usercookie_name,user_info['name'])
+        if debugging:
+            st.write("2. Welcome, ", user_info['name'])
         st.experimental_rerun()
     else:
         # Generate the authorization URL and state, save the state
@@ -121,7 +129,8 @@ def main():
         st.session_state['state'] = state
 
         # Display the login link
-        st.markdown(f'[Login with Google]({uri})')
+        #st.markdown(f'[Login with Google]({uri})')
+        cookiestore.same_window(uri,"Login with Google - same window")  
 
         # Handle the callback from the OAuth provider
         params = st.experimental_get_query_params()
@@ -133,5 +142,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-"""

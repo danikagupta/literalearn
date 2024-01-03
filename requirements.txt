@@ -7,9 +7,10 @@ streamlit_webrtc
 streamlit
 openai
 audio-recorder-streamlit
-git+https://github.com/openai/whisper.git
+# git+https://github.com/openai/whisper.git
 nltk
 gcsfs
 st-files-connection
 google-cloud-speech
 Authlib
+extra-streamlit-components
