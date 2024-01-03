@@ -12,3 +12,4 @@ nltk
 gcsfs
 st-files-connection
 google-cloud-speech
+Authlib
