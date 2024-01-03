@@ -52,11 +52,6 @@ def get_user_info(access_token):
         raise Exception("Failed to retrieve user info: " + user_info.get('error_description', ''))
     return user_info
 
-def nav_to(url):
-    nav_script = """
-        <meta http-equiv="refresh" content="0; url='%s'">
-    """ % (url)
-    st.write(nav_script, unsafe_allow_html=True)
 
 def get_sheet():
     import requests

@@ -51,19 +51,20 @@ def get_user_info(access_token):
     return user_info
 
 
-def get_sheet():
+def get_sheet(debugging=False):
     import requests
     url = "https://v1.nocodeapi.com/gprof/google_sheets/ULJTWlUlxDbMDOzR"
     params = {"tabId": 'Sheet1'}
     r = requests.get(url = url, params = params)
-    print(f"R={r}")
+    # print(f"R={r}")
     result = r.json()
-    print(f"Result={result}")
+    # print(f"Result={result}")
     d=result['data']
-    print(f"Result Data={d}")
+    # print(f"Result Data={d}")
     df=pd.DataFrame(d)
-    print(result)
-    st.dataframe(df)
+    if debugging:
+        print(result)
+        st.dataframe(df)
     return df
 
 def process_user_info(user_info,debugging):
@@ -97,7 +98,7 @@ def main(debugging=False):
     else:
         if debugging:
             st.write(f"User found: {usercookie_value}")
-        process_user_info({'sub':usercookie_value,'name':usercookie_value})
+        process_user_info({'sub':usercookie_value,'name':usercookie_value},debugging)
         return
 
     # Initialize the session
@@ -119,7 +120,7 @@ def main(debugging=False):
         st.session_state['token'] = token
         st.session_state['user_info'] = user_info
         st.session_state['states_seen'] = "Passed 2"
-        cookiestore.cookie_manager.set(usercookie_name,user_info['name'])
+        cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['name'])
         if debugging:
             st.write("2. Welcome, ", user_info['name'])
         st.experimental_rerun()
@@ -130,7 +131,7 @@ def main(debugging=False):
 
         # Display the login link
         #st.markdown(f'[Login with Google]({uri})')
-        cookiestore.same_window(uri,"Login with Google - same window")  
+        cookiestore.same_window(uri,"Login with Google")  
 
         # Handle the callback from the OAuth provider
         params = st.experimental_get_query_params()
