@@ -53,7 +53,7 @@ def get_user_info(access_token):
 
 
 def process_user_info(user_info,debugging):
-    df=datastore.get_sheet("users")
+    df=datastore.get_sheet("users",debugging)
     subId="google-"+str(user_info['sub'])
     if debugging:
         st.sidebar.write(f"Trying to match subId={subId}")  
@@ -99,7 +99,8 @@ def main(debugging=False):
             st.write(f"1. Welcome {user_info['name']}!")
         #cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['name'])
         cookiestore.cookie_manager.set(cookiestore.usercookie_id,user_info['sub'])
-        print(f"Calling process_user_info because user info is in session state with {user_info}.")
+        if debugging:
+            print(f"Calling process_user_info because user info is in session state with {user_info}.")
         process_user_info(user_info,debugging)
         #XXX
         # Do the main thing here
@@ -125,7 +126,6 @@ def main(debugging=False):
         st.session_state['state'] = state
 
         # Display the login link
-        #st.markdown(f'[Login with Google]({uri})')
         cookiestore.not_same_window(uri,"Login with Google")  
 
         # Handle the callback from the OAuth provider

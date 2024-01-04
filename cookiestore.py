@@ -1,7 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 
-st.write("# Cookie Manager")
+# st.write("# Cookie Manager")
 
 @st.cache_resource(experimental_allow_widgets=True)
 def get_manager():
