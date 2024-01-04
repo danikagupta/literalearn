@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 
 import cookiestore
+import datastore
    
 
 # Replace these with your client details
@@ -51,55 +52,42 @@ def get_user_info(access_token):
     return user_info
 
 
-def get_sheet(debugging=False):
-    import requests
-    url = "https://v1.nocodeapi.com/gprof/google_sheets/ULJTWlUlxDbMDOzR"
-    params = {"tabId": 'Sheet1'}
-    r = requests.get(url = url, params = params)
-    # print(f"R={r}")
-    result = r.json()
-    # print(f"Result={result}")
-    d=result['data']
-    # print(f"Result Data={d}")
-    df=pd.DataFrame(d)
-    if debugging:
-        print(result)
-        st.dataframe(df)
-    return df
-
 def process_user_info(user_info,debugging):
-    df=get_sheet()
-    subId=user_info['sub']
-    df=df[df['ID']==subId]
-    st.sidebar.data_editor(df)
+    df=datastore.get_sheet("users")
+    subId="google-"+str(user_info['sub'])
+    if debugging:
+        st.sidebar.write(f"Trying to match subId={subId}")  
+        st.sidebar.dataframe(df)
+    df=df[df['sub']==subId]
+    if debugging:
+        st.sidebar.write(f"After match subId={subId}")  
+        st.sidebar.dataframe(df)
     if(len(df)>0):
         if debugging:
             st.sidebar.write("You are in the list")
-            st.sidebar.dataframe(df)
     else:
         if debugging:
-            st.sidebar.write("You are not in the list")
-            st.sidebar.dataframe(df)
-        url = "https://v1.nocodeapi.com/gprof/google_sheets/ULJTWlUlxDbMDOzR"
-        params = {"tabId": "Sheet1"}
-        data = [[subId,user_info['name'],'hi','en',2,2]]
-        r = requests.post(url = url, params = params, json = data)
-        result = r.json()
-        if debugging:
-            print(result)
+            st.sidebar.write("You are not in the list. Adding you.")
+        #datastore.add_to_sheet("users",[subId,user_info['name'],'hi','en',3,2],debugging)
+        datastore.add_to_sheet("users",[subId,user_info['name']],debugging)
 
 def main(debugging=False):
     if debugging:
         st.title('OAuth with Streamlit SIGNON-PY')
-    usercookie_value=cookiestore.cookie_manager.get(cookie=cookiestore.usercookie_name)
-    if usercookie_value is None:
+
+    aaa=""" 
+    usercookie_name=cookiestore.cookie_manager.get(cookie=cookiestore.usercookie_name)
+    usercookie_id=cookiestore.cookie_manager.get(cookie=cookiestore.usercookie_id)
+    if usercookie_id is None:
         if debugging:
             st.write("No user found")
     else:
         if debugging:
-            st.write(f"User found: {usercookie_value}")
-        process_user_info({'sub':usercookie_value,'name':usercookie_value},debugging)
+            st.write(f"User found: {usercookie_id}")
+        print(f"Calling process_user_info because UserCookie is set {usercookie_id} with {usercookie_name}.")
+        process_user_info({'sub':usercookie_id,'name':usercookie_name},debugging)
         return
+    """
 
     # Initialize the session
     session = OAuth2Session(client_id, client_secret, scope=scope, redirect_uri=redirect_uri)
@@ -109,21 +97,28 @@ def main(debugging=False):
         user_info = st.session_state['user_info']
         if debugging:
             st.write(f"1. Welcome {user_info['name']}!")
-        cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['sub'])
+        #cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['name'])
+        cookiestore.cookie_manager.set(cookiestore.usercookie_id,user_info['sub'])
+        print(f"Calling process_user_info because user info is in session state with {user_info}.")
         process_user_info(user_info,debugging)
         #XXX
         # Do the main thing here
     elif 'scope' in st.experimental_get_query_params():
         # Exchange the code for a token
-        token = exchange_code_for_token(st.experimental_get_query_params()['code'])
-        user_info = get_user_info(token)
-        st.session_state['token'] = token
-        st.session_state['user_info'] = user_info
-        st.session_state['states_seen'] = "Passed 2"
-        cookiestore.cookie_manager.set(cookiestore.usercookie_name,user_info['name'])
-        if debugging:
-            st.write("2. Welcome, ", user_info['name'])
-        st.experimental_rerun()
+        try:
+            token = exchange_code_for_token(st.experimental_get_query_params()['code'])
+            user_info = get_user_info(token)
+            st.session_state['token'] = token
+            st.session_state['user_info'] = user_info
+            st.session_state['states_seen'] = "Passed 2"
+            cookiestore.cookie_manager.set(cookiestore.usercookie_id,user_info['sub'])
+            print("Success in exchange_code_for_token.")
+            if debugging:
+                st.write("2. Welcome, ", user_info['name'])
+            st.rerun()
+        except:
+            print("Remove query parameters in exchange_code_for_token.")
+            cookiestore.remove_query_params()
     else:
         # Generate the authorization URL and state, save the state
         uri, state = session.create_authorization_url(authorization_endpoint)

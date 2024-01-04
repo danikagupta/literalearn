@@ -4,4 +4,4 @@ import signon
 
 st.write("# Hello world!! (from main Hello.py)")
 # cookiestore.cookie_ui()
-signon.main()
+signon.main(debugging=True)

@@ -8,12 +8,22 @@ def get_manager():
     return stx.CookieManager()
 
 cookie_manager = get_manager()
-usercookie_name='LiteraLearnUser'
+usercookie_id='LiteraLearnUserId'
+usercookie_name='LiteraLearnUserName'
+usercookie_email='LiteraLearnUserEmail'
 
 def same_window(uri,msg):
     st.markdown(f"""
             <a href="{uri}" target = "_self">  {msg} </a>
         """, unsafe_allow_html=True)
+
+def remove_query_params():
+    current_params = st.experimental_get_query_params()
+    params=list(current_params.keys())
+    for param in params:
+        del current_params[param]
+    st.experimental_set_query_params(**current_params)
+
 
 def cookie_ui():
 
@@ -21,7 +31,7 @@ def cookie_ui():
     cookies = cookie_manager.get_all()
     st.write(cookies)
 
-    c4, c1, c2, c3 = st.columns(4)
+    c4, c1, c2, c3, c5 = st.columns(5)
 
     with c1:
         st.subheader("Get Cookie:")
@@ -45,5 +55,10 @@ def cookie_ui():
         st.subheader("Delete LOGIN Cookie")
         if st.button("Delete LOGIN"):
             cookie_manager.delete(usercookie_name)
+    with c5:
+        st.subheader("Delete ALL Cookies")
+        if st.button("Delete ALL Cookies"):
+            for cookie in cookies.keys():
+                cookie_manager.delete(cookie)
 
     
