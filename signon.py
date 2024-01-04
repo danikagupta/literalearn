@@ -126,7 +126,7 @@ def main(debugging=False):
 
         # Display the login link
         #st.markdown(f'[Login with Google]({uri})')
-        cookiestore.same_window(uri,"Login with Google")  
+        cookiestore.not_same_window(uri,"Login with Google")  
 
         # Handle the callback from the OAuth provider
         params = st.experimental_get_query_params()

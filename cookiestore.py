@@ -17,6 +17,11 @@ def same_window(uri,msg):
             <a href="{uri}" target = "_self">  {msg} </a>
         """, unsafe_allow_html=True)
 
+def not_same_window(uri,msg):
+    st.markdown(f"""
+            <a href="{uri}" target = "_blank">  {msg} </a>
+        """, unsafe_allow_html=True)
+
 def remove_query_params():
     current_params = st.experimental_get_query_params()
     params=list(current_params.keys())
