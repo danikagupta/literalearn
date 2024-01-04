@@ -17,9 +17,7 @@ scope='email profile'
 authorization_endpoint = 'https://accounts.google.com/o/oauth2/auth'
 token_endpoint = 'https://oauth2.googleapis.com/token'
 userinfo_endpoint = 'https://www.googleapis.com/oauth2/v1/userinfo'
-st.sidebar.markdown(f"Secrets:\n {st.secrets}")
-st.sidebar.markdown(f"State:\n {st.session_state}")
-st.sidebar.markdown(f"Params:\n {st.experimental_get_query_params()}")
+
 
 
 
@@ -71,9 +69,12 @@ def process_user_info(user_info,debugging):
         #datastore.add_to_sheet("users",[subId,user_info['name'],'hi','en',3,2],debugging)
         datastore.add_to_sheet("users",[subId,user_info['name']],debugging)
 
-def main(debugging=False):
+def main(debugging):
     if debugging:
         st.title('OAuth with Streamlit SIGNON-PY')
+        st.sidebar.markdown(f"Secrets:\n {st.secrets}")
+        st.sidebar.markdown(f"State:\n {st.session_state}")
+        st.sidebar.markdown(f"Params:\n {st.experimental_get_query_params()}")
 
     aaa=""" 
     usercookie_name=cookiestore.cookie_manager.get(cookie=cookiestore.usercookie_name)
@@ -137,4 +138,4 @@ def main(debugging=False):
             st.experimental_rerun()
 
 if __name__ == '__main__':
-    main()
+    main(False)

@@ -27,6 +27,16 @@ def get_sheet(sheet,debugging):
         st.dataframe(df)
     return df
 
+def get_user_status(subId,debugging):
+    df=get_sheet("status",debugging)
+    print(f"get-user-status initially found {df} OR {df.to_dict()}")
+    if debugging:
+        st.write(f"Trying to match subId={subId}")  
+        st.dataframe(df)
+    df=df[df['sub']==subId]
+    print(f"get-user-status found {df} returning {df.to_dict()}")
+    return df
+
 def get_user_row(subId,debugging):
     df=get_sheet("users",debugging)
     if debugging:
@@ -41,6 +51,20 @@ def get_user_row(subId,debugging):
                 st.write(f"Found row-dict={row_dict}")
             return row_dict
     return None
+
+def update_user_lang(subId,lang,debugging):
+    print(f"Update user lang INPUT {subId} {lang} {debugging}}}")
+    row_dict=get_user_row(subId,debugging)
+    params = {"tabId": "Sheet1"}
+    row_dict['language']=lang
+    url=sheet_mapping["users"]
+    print(f"Update user lang Request {row_dict} URL {url}}}")
+    r = requests.put(url = url, params = params, json = row_dict)
+    result = r.json()
+    # if debugging:
+    print(f"Update user lang returns {result}")
+    return result
+  
 
 def add_to_sheet(sheet,row,debugging=False):
     if debugging:
@@ -61,3 +85,10 @@ def show_sheets(debugging=False):
         st.write(f"## {sheet}")
         st.dataframe(df)
 
+
+def add_user_level(subId,name,lang,level,debugging):
+    print(f"Add user level INPUT {subId}:{name}:{lang}:{level}:{debugging}}}")
+
+    row=[subId,name,lang,level,0,"NA"]
+    result=add_to_sheet("status",row,True)
+    return result 
