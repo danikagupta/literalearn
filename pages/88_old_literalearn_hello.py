@@ -1,4 +1,5 @@
 import streamlit as st
+aaa=""" 
 from audio_recorder_streamlit import audio_recorder
 import os
 from openai import OpenAI
@@ -83,11 +84,14 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
             }, "required": ["similarity_score"],
         }
     }]
+    """
     llm_input=f"""
     You are a language reviewer responsible for reviewing the similarity of two sentences.
     Please note that the specifc words and word-order are important, not just the meaning.
     On a scale of 1-10, with 10 being the most similar, how similar are these: "{str1}", and "{str2}".
     """
+
+    aaa="""
     messages = [{"role": "user", "content": llm_input}]
     response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, functions=functions, function_call={"name": "print_similarity_score"})
     #print(f"Response is: {response}")
@@ -158,4 +162,4 @@ if audio_bytes:
     sc2=function_print_similarity_score(transcription,sentence)
     st.markdown(f"BLEU score: {sc}")
     st.markdown(f"OpenAI score: {sc2}")
- 
+ """

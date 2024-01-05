@@ -1,16 +1,16 @@
-altair
+#altair
 numpy
 pandas
-streamlit-audiorecorder
-streamlit-audiorec
-streamlit_webrtc
+#streamlit-audiorecorder
+#streamlit-audiorec
+#streamlit_webrtc
 streamlit
 openai
 audio-recorder-streamlit
 # git+https://github.com/openai/whisper.git
-nltk
-gcsfs
-st-files-connection
+#nltk
+#gcsfs
+#st-files-connection
 google-cloud-speech
 Authlib
 extra-streamlit-components
