@@ -2,7 +2,10 @@ import streamlit as st
 import cookiestore
 import signon
 import datastore
+import quizworld
+
 import random
+import pandas as pd
 
 languages={"हिंदी":"hi","English":"en","മലയാളം":"ml","සිංහල":"si"}
 level_select={"hi":"साफ़ से बोलें (level)","en":"What's your level?","ml":"വ്യക്തമായി സംസാരിക്കുക (level)","si":"පැහැදිලිව කතා කරන්න (level)"}
@@ -66,6 +69,10 @@ def run_once(debugging):
         return
     user_name=user_record['name']
     st.markdown(f"## Welcome {user_name}!")
+    if 'selected_question' in st.session_state:
+        # User is answering a question in progress; we can skip other steps.
+        quizworld.ask_question(user_sub,st.session_state['selected_question'],st.session_state['selected_language'],debugging)  
+        return
     #if debugging:
     print(f"For user {user_name}, got user record {user_record}")
     if 'language' not in user_record:
@@ -86,16 +93,29 @@ def run_once(debugging):
     # Start showing user questions in corresponding languages and levels
     # 
     #
-    st.markdown(f"## Unfinished business for {user_name} with {user_record} and languages {languages}!")
-    st.dataframe(df_user_lang)
-    # Step 1: Randomly Select a Language
-    selected_language = random.choice(languages)
+    if debugging:
+        st.markdown(f"Final steps for {user_name} with {user_record} and languages {languages}!")
+        st.dataframe(df_user_lang)
+    filtered_df=df_user_lang.copy()
+    # Step 1: Select records where answered is "No"
+    filtered_df = filtered_df[filtered_df['answered'] == "No"]
+    filtered_df['level'] = pd.to_numeric(filtered_df['level'])
+    # Step 2: Randomly Select a Language
+    selected_language = random.choice(filtered_df['language'].unique())
     # Step 2: Filter Data for Selected Language
-    filtered_df = df_user_lang[df_user_lang['language'] == selected_language]
+    filtered_df = filtered_df[filtered_df['language'] == selected_language]
     # Step 3: Find the Record with the Highest Level
-    highest_level_record = filtered_df.loc[filtered_df['level'].idxmax()]
-    print(highest_level_record)
-    st.markdown(f"## HLR: {highest_level_record['language']} {highest_level_record['level']} {highest_level_record['question']}")
+    highest_level = filtered_df['level'].max()
+    filtered_df = filtered_df[filtered_df['level'] == highest_level]
+    #if debugging:
+    print(f"Higest level= {highest_level}")
+    st.markdown(f"## HLR: {highest_level}")
+    st.dataframe(filtered_df)
+    selected_question = random.choice(filtered_df['question'].unique())
+    st.session_state['selected_question']=selected_question
+    st.session_state['user_sub']=user_sub
+    st.session_state['selected_language']=selected_language
+    quizworld.ask_question(user_sub,selected_question,selected_language,debugging)
 
 def main():
     run_once(False)

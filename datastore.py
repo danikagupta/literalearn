@@ -37,6 +37,28 @@ def get_user_status(subId,debugging):
     print(f"get-user-status found {df} returning {df.to_dict()}")
     return df
 
+def get_questions(lang,level,debugging):
+    df=get_sheet("sentences",debugging)
+    df['level'] = pd.to_numeric(df['level'])
+    if debugging:
+        st.write(f"Trying to match lang={lang} and level={level}")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    df=df[df['language']==lang]
+    if debugging:
+        st.write(f"After filter for lang={lang}  ")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    df=df[df['level']==level]
+    if debugging:
+        st.write(f"After filter for  level={level}")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    if debugging:
+        st.write(f"Found {df} returning {df.to_dict()}")
+    return df
+
+
 def get_user_row(subId,debugging):
     df=get_sheet("users",debugging)
     if debugging:
@@ -64,7 +86,19 @@ def update_user_lang(subId,lang,debugging):
     # if debugging:
     print(f"Update user lang returns {result}")
     return result
-  
+
+def add_rows_to_sheet(sheet,rows,debugging=False):
+    if debugging:
+        print(f"DataStore.AddRowsToSheet: Adding {rows} to {sheet}") 
+    url=sheet_mapping[sheet]
+    params = {"tabId": "Sheet1"}
+    r = requests.post(url = url, params = params, json = rows)
+    result = r.json()
+    if debugging:
+        print(result)   
+    return result  
+
+
 
 def add_to_sheet(sheet,row,debugging=False):
     if debugging:
@@ -90,5 +124,18 @@ def add_user_level(subId,name,lang,level,debugging):
     print(f"Add user level INPUT {subId}:{name}:{lang}:{level}:{debugging}}}")
 
     row=[subId,name,lang,level,0,"NA"]
-    result=add_to_sheet("status",row,True)
+    #result=add_to_sheet("status",row,True)
+    questions=get_questions(lang,level,debugging)
+    result=add_questions_for_user(subId,name,questions,debugging)
     return result 
+
+
+def add_questions_for_user(subId,name,questions,debugging):
+    print(f"Add questions for user: INPUT {subId} {questions} {debugging}")
+    rows=[]
+    for index, question in questions.iterrows():
+        row=[subId,name,question['language'],question['level'],question['sentence'],'No']
+        rows.append(row)
+    print(f"Add questions for user: ADDING {rows}")
+    result=add_rows_to_sheet("status",rows,debugging)
+    return result
