@@ -18,6 +18,17 @@ languages={"English":"en","हिंदी":"hi","മലയാളം":"ml","ස�
 level_select={"hi":"साफ़ से बोलें (level)","en":"What's your level?","ml":"വ്യക്തമായി സംസാരിക്കുക (level)","si":"පැහැදිලිව කතා කරන්න (level)"}
 levels=[1,2,3,4,5,6,7,8,9,10,11,12]
 
+def setup_sidebar():
+    st.sidebar.title("LiteraLearn")
+    st.sidebar.image("assets/icon128px-red.png")
+    images=["assets/img1.jpg","assets/img2.jpg","assets/img3.jpg",
+            "assets/img4.jpg","assets/img5.jpg","assets/img6.jpg",
+            "assets/img7.jpg","assets/img8.jpg","assets/img9.jpg",
+            "assets/img10.jpg","assets/img11.jpg","assets/img12.jpg",
+            "assets/img13.jpg"]
+    random_image=random.choice(images)
+    st.sidebar.image(random_image)
+
 def send_to_customer_service(debugging):
     print("We're sorry, but we can't identify customer.")
     if debugging:
@@ -69,8 +80,7 @@ def process_question(user_sub,user_name,level,question,language,debugging):
     
 
 def run_once(debugging):
-    st.sidebar.title("LiteraLearn")
-    st.sidebar.image("assets/icon128px-red.png")
+    setup_sidebar()
     if debugging:
         st.write("# Hello world!! (from main Hello.py)")
     # cookiestore.cookie_ui()
