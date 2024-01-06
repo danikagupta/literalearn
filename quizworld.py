@@ -76,18 +76,24 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
 
 
 
-def ask_question(user_sub,user_name, selected_question,language,debugging):
+def ask_question(user_sub,user_name, selected_question,language, level, debugging):
     if debugging:
         st.markdown(f"## Ask Question: {selected_question} for user {user_sub}") 
     main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}  
     language_iso=language
     instruction=main_instruction[language_iso]
     sentence=selected_question
-    st.markdown(f"# {instruction}, {user_name}")
+    colA,colB,colC=st.columns(3)
+    colA.markdown(f"## Student: {user_name}")
+    colB.markdown(f"## Language: {language_iso}")
+    colC.markdown(f"## Level: {level}")
     col1,col2=st.columns(2)
     col1.markdown(f"## {sentence}")
-    # No audio at this time; will investigate TTS. 
-    # col2.audio(audiobytes, format="audio/wav")
+    # Single audio at this time; will investigate TTS. 
+    fname=os.path.join(os.getcwd(),"audiofiles","howAreYou_en.wav")
+    af = open(fname, 'rb')
+    audiobytes = af.read()
+    col2.audio(audiobytes, format="audio/wav")
 
     path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
     audio_bytes = audio_recorder(text="")

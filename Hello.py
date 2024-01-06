@@ -52,7 +52,7 @@ def send_to_level_selection(user_sub,user_name,user_native_language,debugging):
         datastore.add_user_level(user_sub,user_name,user_native_language,level_selected,debugging)
 
 def process_question(user_sub,user_name,level,question,language,debugging):
-    score=quizworld.ask_question(user_sub,user_name,question,language,debugging)
+    score=quizworld.ask_question(user_sub,user_name,question,language,level,debugging)
     if score>=PASSING_SCORE_VERBAL:
         if debugging:
             st.markdown(f"## Congratulations! You answered correctly.")
