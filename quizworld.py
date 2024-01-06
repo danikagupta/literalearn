@@ -9,6 +9,7 @@ from audio_recorder_streamlit import audio_recorder
 import os
 import json
 
+
 def transcribe_audio(file_path,language_iso):
     gcs_credentials = st.secrets["connections"]["gcs"]
     credentials = service_account.Credentials.from_service_account_info(gcs_credentials)
@@ -68,18 +69,20 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
     #print(f"Function call is: {function_call}")
     argument = json.loads(function_call.arguments)
     #print(f"Response function parameters are: {argument}")
-    print(f"For inputs {str1} and {str2}, the similarity score is: {argument}")
-    return argument
+    print(f"For inputs {str1} and {str2}, the similarity score is: {argument} and type is {type(argument)}")
+    result=argument['similarity_score']
+    return result
 
 
 
-def ask_question(user_sub,selected_question,language,debugging):
-    st.markdown(f"## Ask Question: {selected_question} for user {user_sub}") 
+def ask_question(user_sub,user_name, selected_question,language,debugging):
+    if debugging:
+        st.markdown(f"## Ask Question: {selected_question} for user {user_sub}") 
     main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}  
     language_iso=language
     instruction=main_instruction[language_iso]
     sentence=selected_question
-    st.markdown(f"## {instruction}")
+    st.markdown(f"# {instruction}, {user_name}")
     col1,col2=st.columns(2)
     col1.markdown(f"{sentence}")
     # No audio at this time; will investigate TTS. 
@@ -88,11 +91,15 @@ def ask_question(user_sub,selected_question,language,debugging):
     path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
     audio_bytes = audio_recorder(text="")
     if audio_bytes:
-        st.audio(audio_bytes, format="audio/wav")
         with open(path_myrecording, mode='bw') as f:
             f.write(audio_bytes)
             f.close()
         transcription = transcribe_audio(path_myrecording,language_iso)
-        st.markdown(f"Transcription: {transcription}")
         sc2=function_print_similarity_score(transcription,sentence)
-        st.markdown(f"OpenAI score: {sc2}") 
+        if debugging:
+            st.audio(audio_bytes, format="audio/wav")
+            st.markdown(f"Transcription: {transcription}")
+            st.markdown(f"OpenAI score: {sc2} type={type(sc2)}") 
+        return sc2
+    else:
+        return -1

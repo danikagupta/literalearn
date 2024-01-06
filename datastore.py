@@ -74,6 +74,46 @@ def get_user_row(subId,debugging):
             return row_dict
     return None
 
+def get_user_question_row(user_sub,language,question,debugging):
+    df=get_sheet("status",debugging)
+    if debugging:
+        st.write(f"Trying to match subId={user_sub} and language={language} and question={question}")  
+        st.dataframe(df)
+    for index, row in df.iterrows():
+        if debugging:
+            st.write(f"Row={row}")
+        if row['sub']==user_sub and row['question']==question and row['language']==language:
+            row_dict=row.to_dict()
+            if debugging:
+                st.write(f"Found row-dict={row_dict}")
+            return row_dict
+    return None
+
+def get_user_question_answers(user_sub,language,level,debugging):
+    df=get_sheet("status",debugging)
+    df['level'] = pd.to_numeric(df['level'])
+    if debugging:
+        st.write(f"Trying to match subId={user_sub} and language={language} and level={level}")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    df=df[df['sub']==user_sub]
+    if debugging:
+        st.write(f"After filter for sub={user_sub}  ")  
+        st.dataframe(df)
+    df=df[df['language']==language]
+    if debugging:
+        st.write(f"After filter for lang={language}  ")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    df=df[df['level']==level]
+    if debugging:
+        st.write(f"After filter for  level={level}")  
+        st.dataframe(df)
+        st.write(f"Data types are {df.dtypes}")
+    if debugging:
+        st.write(f"Found {df} returning {df.to_dict()}")
+    return df
+
 def update_user_lang(subId,lang,debugging):
     print(f"Update user lang INPUT {subId} {lang} {debugging}}}")
     row_dict=get_user_row(subId,debugging)
@@ -138,4 +178,44 @@ def add_questions_for_user(subId,name,questions,debugging):
         rows.append(row)
     print(f"Add questions for user: ADDING {rows}")
     result=add_rows_to_sheet("status",rows,debugging)
+    return result
+
+def update_answer(user_sub,language,question,debugging):
+    # st.markdown(f"# Unfinished business: update_answer {user_sub} {language} {question} {debugging}")
+    # print(f"Update user lang INPUT {subId} {lang} {debugging}}}")
+    row_dict=get_user_question_row(user_sub,language,question,debugging)
+    params = {"tabId": "Sheet1"}
+    row_dict['answered']="Yes"
+    url=sheet_mapping["status"]
+    print(f"Update user lang Request {row_dict} URL {url}}}")
+    r = requests.put(url = url, params = params, json = row_dict)
+    result = r.json()
+    # if debugging:
+    print(f"Update user answer returns {result}")
+    return result
+
+def get_success_rate(user_sub,language,level,last_question,debugging):
+    if debugging:
+        st.markdown(f"#  get_success_rate {user_sub} {language} {level} {debugging}")
+    df=get_user_question_answers(user_sub,language,level,debugging)
+    if debugging:
+        st.markdown("Returned DF for Get-Success-Rate")
+        st.dataframe(df)
+    df.loc[df['question'] == last_question, 'answered'] = 'Yes'
+    yes_count = (df['answered'] == 'Yes').sum()
+    yes_pct=(yes_count/len(df))*100
+    if debugging:
+        st.markdown(f"Returned DF for Get-Success-Rate - post-update {yes_count} {yes_pct}")
+        st.dataframe(df)
+    return yes_pct
+
+def enable_english(user_sub,user_name,debugging):
+    print(f"Enable English INPUT {user_sub} {user_name} {debugging}}}")
+    df=get_user_status(user_sub,debugging)
+    df=df[df['language']=='English']
+    if(len(df)>0):
+        print(f"Enable English: Already enabled")
+        return -1
+    else:
+        result=add_user_level(user_sub,user_name,'en',5,debugging)
     return result

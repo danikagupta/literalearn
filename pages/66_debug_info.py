@@ -6,6 +6,10 @@ import cookiestore
 
 import pandas as pd
 
+ee=st.button("Enable English")
+if ee:
+    datastore.enable_english("google-111998729756733250236","test",True)
+
 df=datastore.get_questions("en",10,True)
 st.dataframe(df,hide_index=True)
 

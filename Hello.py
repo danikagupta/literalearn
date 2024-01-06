@@ -7,6 +7,13 @@ import quizworld
 import random
 import pandas as pd
 
+MAX_LEVEL=11
+PASSING_SCORE_VERBAL=80
+PASSING_SCORE_LANG=70
+SCORE_ENGLISH_ENABLE=60
+
+GIF_URL="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGxldmIxMXZsbTkxbHR3ejg1MzgwM3pwNDMwYzAzZGIxcGY5bGZ3ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OC0aNQsPvqiEhFDQ9p/giphy.gif"
+
 languages={"हिंदी":"hi","English":"en","മലയാളം":"ml","සිංහල":"si"}
 level_select={"hi":"साफ़ से बोलें (level)","en":"What's your level?","ml":"വ്യക്തമായി സംസാരിക്കുക (level)","si":"පැහැදිලිව කතා කරන්න (level)"}
 levels=[1,2,3,4,5,6,7,8,9,10,11,12]
@@ -32,6 +39,32 @@ def send_to_level_selection(user_sub,user_name,user_native_language,debugging):
         st.markdown(f"## {user_native_language} {level_selected}.")
         print(f"## {user_native_language} {level_selected}.")
         datastore.add_user_level(user_sub,user_name,user_native_language,level_selected,debugging)
+
+def process_question(user_sub,user_name,level,question,language,debugging):
+    score=quizworld.ask_question(user_sub,user_name,question,language,debugging)
+    if score>PASSING_SCORE_VERBAL:
+        if debugging:
+            st.markdown(f"## Congratulations! You answered correctly.")
+        st.image(GIF_URL)
+        datastore.update_answer(user_sub,language,question,debugging)
+        del st.session_state['selected_question']
+        level_score=datastore.get_success_rate(user_sub,language,level,question,debugging)
+        print(f"Checking language. Level score is {level_score} and level is {level} and passing score is {PASSING_SCORE_LANG}")
+        if level_score>PASSING_SCORE_LANG:
+            st.markdown("Congratulations! You have passed this level. You will now move to the next level.")    
+            st.balloons()
+            if(level<MAX_LEVEL):
+                datastore.add_user_level(user_sub,user_name,language,level+1,debugging)
+        if level_score>SCORE_ENGLISH_ENABLE:
+            st.markdown("Congratulations! You have passed the English Enablement level. You will now be able to answer questions in English.")
+            st.balloons()
+            datastore.enable_english(user_sub,user_name,debugging)
+    bu=st.button("Next Question")
+    if bu:
+        # TO-DO. Delete other state elements, including the transcript.
+        print("Rerunning due to Next Question")
+        st.rerun()
+    
 
 def run_once(debugging):
     if debugging:
@@ -68,10 +101,16 @@ def run_once(debugging):
         send_to_customer_service()
         return
     user_name=user_record['name']
-    st.markdown(f"## Welcome {user_name}!")
+    if debugging:
+        st.markdown(f"## Welcome {user_name}!")
     if 'selected_question' in st.session_state:
         # User is answering a question in progress; we can skip other steps.
-        quizworld.ask_question(user_sub,st.session_state['selected_question'],st.session_state['selected_language'],debugging)  
+        selected_question=st.session_state['selected_question']
+        user_sub=st.session_state['user_sub']
+        user_name=st.session_state['user_name']
+        selected_language=st.session_state['selected_language']
+        highest_level=st.session_state['highest_level']
+        process_question(user_sub,user_name,highest_level,selected_question,selected_language,debugging) 
         return
     #if debugging:
     print(f"For user {user_name}, got user record {user_record}")
@@ -101,21 +140,24 @@ def run_once(debugging):
     filtered_df = filtered_df[filtered_df['answered'] == "No"]
     filtered_df['level'] = pd.to_numeric(filtered_df['level'])
     # Step 2: Randomly Select a Language
+    languages=filtered_df['language'].unique()
     selected_language = random.choice(filtered_df['language'].unique())
     # Step 2: Filter Data for Selected Language
     filtered_df = filtered_df[filtered_df['language'] == selected_language]
     # Step 3: Find the Record with the Highest Level
     highest_level = filtered_df['level'].max()
     filtered_df = filtered_df[filtered_df['level'] == highest_level]
-    #if debugging:
-    print(f"Higest level= {highest_level}")
-    st.markdown(f"## HLR: {highest_level}")
-    st.dataframe(filtered_df)
+    if debugging:
+        print(f"Higest level= {highest_level}")
+        st.markdown(f"## HLR: {highest_level}")
+        st.dataframe(filtered_df)
     selected_question = random.choice(filtered_df['question'].unique())
     st.session_state['selected_question']=selected_question
     st.session_state['user_sub']=user_sub
+    st.session_state['user_name']=user_name
     st.session_state['selected_language']=selected_language
-    quizworld.ask_question(user_sub,selected_question,selected_language,debugging)
+    st.session_state['highest_level']=highest_level
+    process_question(user_sub,user_name,highest_level,selected_question,selected_language,debugging)
 
 def main():
     run_once(False)
