@@ -14,7 +14,7 @@ SCORE_ENGLISH_ENABLE=60
 
 GIF_URL="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGxldmIxMXZsbTkxbHR3ejg1MzgwM3pwNDMwYzAzZGIxcGY5bGZ3ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OC0aNQsPvqiEhFDQ9p/giphy.gif"
 
-languages={"हिंदी":"hi","English":"en","മലയാളം":"ml","සිංහල":"si"}
+languages={"English":"en","हिंदी":"hi","മലയാളം":"ml","සිංහල":"si"}
 level_select={"hi":"साफ़ से बोलें (level)","en":"What's your level?","ml":"വ്യക്തമായി സംസാരിക്കുക (level)","si":"පැහැදිලිව කතා කරන්න (level)"}
 levels=[1,2,3,4,5,6,7,8,9,10,11,12]
 
@@ -74,7 +74,7 @@ def run_once(debugging):
     if debugging:
         st.write("# Hello world!! (from main Hello.py)")
     # cookiestore.cookie_ui()
-    signon.main(debugging)
+    signon.main(languages,debugging)
     #
     # Case 1: No user (e.g. Invalid Google Login). Provide a helpful message for them to reach Customer Service.
     # Case 2: Initial user (needs language selection). Provide a menu with langauge choices. Save back in Persistent Storage.
@@ -127,9 +127,9 @@ def run_once(debugging):
     if df_user_lang is None:
         st.markdown(f"## We're sorry, but there is a DF problem. Please contact customer support.")
         return
-    languages=df_user_lang['language'].unique()
-    print(f"Languages are {languages}")
-    if len(languages)==0:
+    user_languages=df_user_lang['language'].unique()
+    print(f"User languages are {user_languages}")
+    if len(user_languages)==0:
         send_to_level_selection(user_sub,user_name,user_native_language,debugging)  
         return
     #
@@ -137,14 +137,14 @@ def run_once(debugging):
     # 
     #
     if debugging:
-        st.markdown(f"Final steps for {user_name} with {user_record} and languages {languages}!")
+        st.markdown(f"Final steps for {user_name} with {user_record} and languages {user_languages}!")
         st.dataframe(df_user_lang)
     filtered_df=df_user_lang.copy()
     # Step 1: Select records where answered is "No"
     filtered_df = filtered_df[filtered_df['answered'] == "No"]
     filtered_df['level'] = pd.to_numeric(filtered_df['level'])
     # Step 2: Randomly Select a Language
-    languages=filtered_df['language'].unique()
+    available_languages=filtered_df['language'].unique()
     selected_language = random.choice(filtered_df['language'].unique())
     # Step 2: Filter Data for Selected Language
     filtered_df = filtered_df[filtered_df['language'] == selected_language]

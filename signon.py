@@ -18,6 +18,13 @@ authorization_endpoint = 'https://accounts.google.com/o/oauth2/auth'
 token_endpoint = 'https://oauth2.googleapis.com/token'
 userinfo_endpoint = 'https://www.googleapis.com/oauth2/v1/userinfo'
 
+login_instructions={
+    "en":"Help content for Login with Google EN",
+    "hi":"Help content for Login with Google HI",
+    "ml":"Help content for Login with Google ML",
+    "si":"Help content for Login with Google SI",
+}
+
 
 
 
@@ -69,7 +76,20 @@ def process_user_info(user_info,debugging):
         #datastore.add_to_sheet("users",[subId,user_info['name'],'hi','en',3,2],debugging)
         datastore.add_to_sheet("users",[subId,user_info['name']],debugging)
 
-def main(debugging):
+def show_login(uri,languages,debugging):
+        if debugging:
+            st.write(f"Show-Login. URI is {uri}")
+        cookiestore.not_same_window(uri,"assets/web_dark_rd_SI_2x.png","Login with Google")  
+        lang_list=languages.keys()
+        lang_select=[languages[x] for x in lang_list]
+        print(f"Lang select is {lang_select} while lang_list is {lang_list}")
+        tab1,tab2,tab3,tab4=st.tabs(lang_list)
+        tab1.markdown(login_instructions['en'])
+        tab2.markdown(login_instructions['hi'])
+        tab3.markdown(login_instructions['ml'])
+        tab4.markdown(login_instructions['si'])
+
+def main(languages,debugging):
     if debugging:
         st.title('OAuth with Streamlit SIGNON-PY')
         st.sidebar.markdown(f"Secrets:\n {st.secrets}")
@@ -125,9 +145,9 @@ def main(debugging):
         # Generate the authorization URL and state, save the state
         uri, state = session.create_authorization_url(authorization_endpoint)
         st.session_state['state'] = state
-
-        # Display the login link
-        cookiestore.not_same_window(uri,"assets/web_dark_rd_SI_4x.png","Login with Google")  
+        
+        # Display the login page
+        show_login(uri,languages,debugging) 
 
         # Handle the callback from the OAuth provider
         params = st.experimental_get_query_params()
