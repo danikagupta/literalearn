@@ -1,5 +1,6 @@
 import streamlit as st
 import extra_streamlit_components as stx
+import base64
 
 # st.write("# Cookie Manager")
 
@@ -17,7 +18,15 @@ def same_window(uri,msg):
             <a href="{uri}" target = "_self">  {msg} </a>
         """, unsafe_allow_html=True)
 
-def not_same_window(uri,msg):
+def not_same_window(uri,image_path,msg):
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    markdown = f'<a href="{uri}" target="_blank"><img src="data:image/png;base64,{encoded_string}" alt={msg}></a>'
+
+    # Display the clickable image
+    st.markdown(markdown, unsafe_allow_html=True)
+    
+def not_same_window_original(uri,msg):
     st.markdown(f"""
             <a href="{uri}" target = "_blank">  {msg} </a>
         """, unsafe_allow_html=True)

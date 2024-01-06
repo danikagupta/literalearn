@@ -127,7 +127,7 @@ def main(debugging):
         st.session_state['state'] = state
 
         # Display the login link
-        cookiestore.not_same_window(uri,"Login with Google")  
+        cookiestore.not_same_window(uri,"assets/web_dark_rd_SI_4x.png","Login with Google")  
 
         # Handle the callback from the OAuth provider
         params = st.experimental_get_query_params()

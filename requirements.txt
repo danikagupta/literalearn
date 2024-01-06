@@ -12,5 +12,6 @@ audio-recorder-streamlit
 #gcsfs
 #st-files-connection
 google-cloud-speech
+google-cloud-texttospeech
 Authlib
 extra-streamlit-components

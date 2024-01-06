@@ -85,7 +85,7 @@ def ask_question(user_sub,user_name, selected_question,language,debugging):
     sentence=selected_question
     st.markdown(f"# {instruction}, {user_name}")
     col1,col2=st.columns(2)
-    col1.markdown(f"{sentence}")
+    col1.markdown(f"## {sentence}")
     # No audio at this time; will investigate TTS. 
     # col2.audio(audiobytes, format="audio/wav")
 
