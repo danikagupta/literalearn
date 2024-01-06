@@ -10,7 +10,7 @@ import os
 import json
 
 
-def transcribe_audio(file_path,language_iso):
+def transcribe_audio(file_path,language_iso,debugging):
     gcs_credentials = st.secrets["connections"]["gcs"]
     credentials = service_account.Credentials.from_service_account_info(gcs_credentials)
     client = speech.SpeechClient(credentials=credentials)
@@ -29,15 +29,16 @@ def transcribe_audio(file_path,language_iso):
     for result in google_response.results:
         response+=result.alternatives[0].transcript
 
-    print(f"Response: {google_response}")
-    print(f"Response.results: {google_response.results}")
-    st.sidebar.markdown(f"Response: {google_response}")
+    if debugging:
+        print(f"Response: {google_response}")
+        print(f"Response.results: {google_response.results}")
+        st.sidebar.markdown(f"Response: {google_response}")
     # Print the transcription of the first alternative of the first result
-    for result in google_response.results:
-        print(f"Result: {result}")
-        print(f"Result.alternatives: {result.alternatives}")
-        print(f"Result.alternatives[0]: {result.alternatives[0]}")
-        print("Transcription: {}".format(result.alternatives[0].transcript))
+        for result in google_response.results:
+            print(f"Result: {result}")
+            print(f"Result.alternatives: {result.alternatives}")
+            print(f"Result.alternatives[0]: {result.alternatives[0]}")
+            print("Transcription: {}".format(result.alternatives[0].transcript))
     return response
 
 def function_print_similarity_score(str1: str, str2: str) -> str:
@@ -58,7 +59,7 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
     llm_input=f"""
     You are a language reviewer responsible for reviewing the similarity of two sentences.
     The user is being given a sentence, and asked to repeat the sentence themselves.
-    As such, the scoring has to be very strict.
+    As such, the scoring has to be lenient.
     Please note that the specifc words and word-order are important, not just the meaning.
     On a scale of 1-100, with 100 being the most similar, how similar are these: "{str1}", and "{str2}".
     """
@@ -94,7 +95,7 @@ def ask_question(user_sub,user_name, selected_question,language,debugging):
         with open(path_myrecording, mode='bw') as f:
             f.write(audio_bytes)
             f.close()
-        transcription = transcribe_audio(path_myrecording,language_iso)
+        transcription = transcribe_audio(path_myrecording,language_iso,debugging)
         sc2=function_print_similarity_score(transcription,sentence)
         st.sidebar.audio(audio_bytes, format="audio/wav")
         st.sidebar.markdown(f"Transcription: {transcription}")

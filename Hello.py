@@ -8,7 +8,7 @@ import random
 import pandas as pd
 
 MAX_LEVEL=11
-PASSING_SCORE_VERBAL=80
+PASSING_SCORE_VERBAL=58
 PASSING_SCORE_LANG=70
 SCORE_ENGLISH_ENABLE=60
 
@@ -69,6 +69,8 @@ def process_question(user_sub,user_name,level,question,language,debugging):
     
 
 def run_once(debugging):
+    st.sidebar.title("LiteraLearn")
+    st.sidebar.image("assets/icon128px-red.png")
     if debugging:
         st.write("# Hello world!! (from main Hello.py)")
     # cookiestore.cookie_ui()

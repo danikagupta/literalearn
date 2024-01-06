@@ -29,12 +29,13 @@ def get_sheet(sheet,debugging):
 
 def get_user_status(subId,debugging):
     df=get_sheet("status",debugging)
-    print(f"get-user-status initially found {df} OR {df.to_dict()}")
     if debugging:
+        print(f"get-user-status initially found {df} OR {df.to_dict()}")
         st.write(f"Trying to match subId={subId}")  
         st.dataframe(df)
     df=df[df['sub']==subId]
-    print(f"get-user-status found {df} returning {df.to_dict()}")
+    if debugging:
+        print(f"get-user-status found {df} returning {df.to_dict()}")
     return df
 
 def get_questions(lang,level,debugging):
