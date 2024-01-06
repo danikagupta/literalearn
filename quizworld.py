@@ -84,9 +84,9 @@ def ask_question(user_sub,user_name, selected_question,language, level, debuggin
     instruction=main_instruction[language_iso]
     sentence=selected_question
     colA,colB,colC=st.columns(3)
-    colA.markdown(f"## Student: {user_name}")
-    colB.markdown(f"## Language: {language_iso}")
-    colC.markdown(f"## Level: {level}")
+    colA.markdown(f"## 🎓: {user_name}")
+    colB.markdown(f"## 📖: {language_iso}")
+    colC.markdown(f"## 🏆: {level}")
     col1,col2=st.columns(2)
     col1.markdown(f"## {sentence}")
     # Single audio at this time; will investigate TTS. 
