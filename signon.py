@@ -136,6 +136,13 @@ def main(debugging):
             token = session.fetch_token(token_endpoint, authorization_response=st.experimental_get_url())
             st.session_state['token'] = token
             st.experimental_rerun()
-
+    aaa="""
+    bu=st.button("Continue")
+    if bu:
+        # TO-DO. Delete other state elements, including the transcript.
+        print("Rerunning due to Next Question")
+        st.rerun()
+    """
+        
 if __name__ == '__main__':
     main(False)

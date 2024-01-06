@@ -96,10 +96,9 @@ def ask_question(user_sub,user_name, selected_question,language,debugging):
             f.close()
         transcription = transcribe_audio(path_myrecording,language_iso)
         sc2=function_print_similarity_score(transcription,sentence)
-        if debugging:
-            st.audio(audio_bytes, format="audio/wav")
-            st.markdown(f"Transcription: {transcription}")
-            st.markdown(f"OpenAI score: {sc2} type={type(sc2)}") 
+        st.sidebar.audio(audio_bytes, format="audio/wav")
+        st.sidebar.markdown(f"Transcription: {transcription}")
+        st.sidebar.markdown(f"Score: {sc2}") 
         return sc2
     else:
         return -1

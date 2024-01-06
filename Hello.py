@@ -42,7 +42,7 @@ def send_to_level_selection(user_sub,user_name,user_native_language,debugging):
 
 def process_question(user_sub,user_name,level,question,language,debugging):
     score=quizworld.ask_question(user_sub,user_name,question,language,debugging)
-    if score>PASSING_SCORE_VERBAL:
+    if score>=PASSING_SCORE_VERBAL:
         if debugging:
             st.markdown(f"## Congratulations! You answered correctly.")
         st.image(GIF_URL)
@@ -59,6 +59,8 @@ def process_question(user_sub,user_name,level,question,language,debugging):
             st.markdown("Congratulations! You have passed the English Enablement level. You will now be able to answer questions in English.")
             st.balloons()
             datastore.enable_english(user_sub,user_name,debugging)
+    else:
+        st.markdown(f"# {score} < {PASSING_SCORE_VERBAL}")
     bu=st.button("Next Question")
     if bu:
         # TO-DO. Delete other state elements, including the transcript.

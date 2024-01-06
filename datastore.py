@@ -212,10 +212,11 @@ def get_success_rate(user_sub,language,level,last_question,debugging):
 def enable_english(user_sub,user_name,debugging):
     print(f"Enable English INPUT {user_sub} {user_name} {debugging}}}")
     df=get_user_status(user_sub,debugging)
-    df=df[df['language']=='English']
+    df=df[df['language']=='en']
     if(len(df)>0):
         print(f"Enable English: Already enabled")
         return -1
     else:
+        print(f"Enable English: Enabling now...")
         result=add_user_level(user_sub,user_name,'en',5,debugging)
     return result
