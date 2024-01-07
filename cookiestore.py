@@ -1,6 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 import base64
+import os
 
 # st.write("# Cookie Manager")
 
@@ -12,6 +13,60 @@ cookie_manager = get_manager()
 usercookie_id='LiteraLearnUserId'
 usercookie_name='LiteraLearnUserName'
 usercookie_email='LiteraLearnUserEmail'
+
+def get_audio_html_code(audiofile):
+    audio_html_code="""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    /* Style the button */
+    .help-button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    /* Style for the Help Icon, you can replace it with an actual image or icon */
+    .help-icon {
+        padding-right: 5px;
+    }
+</style>
+</head>
+<body>
+
+<!-- Button with a help icon -->
+<button class="help-button" onclick="playAudio()">
+    <span class="help-icon">?</span>
+    Help
+</button>
+""" + f"""
+<!-- Audio element -->
+<audio id="myAudio">
+  <source src="{audiofile}" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+""" + """
+<script>
+// Function to play the audio
+function playAudio() {
+  var audio = document.getElementById("myAudio");
+  audio.play();
+}
+</script>
+
+</body>
+</html>
+"""
+    return audio_html_code
 
 def same_window(uri,msg):
     st.markdown(f"""
@@ -37,6 +92,12 @@ def remove_query_params():
     for param in params:
         del current_params[param]
     st.experimental_set_query_params(**current_params)
+
+def get_music_code(audiofile):
+    fname=os.path.join(os.getcwd(),"audiofiles",audiofile)
+    ht=get_audio_html_code(fname)
+    return ht
+
 
 
 def cookie_ui():

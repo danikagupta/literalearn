@@ -6,9 +6,10 @@ import quizworld
 
 import random
 import pandas as pd
+import math
 
 MAX_LEVEL=11
-PASSING_SCORE_VERBAL=58
+PASSING_SCORE_VERBAL=60
 PASSING_SCORE_LANG=70
 SCORE_ENGLISH_ENABLE=60
 
@@ -19,7 +20,7 @@ level_select={"hi":"साफ़ से बोलें (level)","en":"What's yo
 levels=[1,2,3,4,5,6,7,8,9,10,11,12]
 
 def setup_sidebar():
-    st.sidebar.title("LiteraLearn")
+    st.sidebar.markdown("# LiteraLearn")
     st.sidebar.image("assets/icon128px-red.png")
     images=["assets/img1.jpg","assets/img2.jpg","assets/img3.jpg",
             "assets/img4.jpg","assets/img5.jpg","assets/img6.jpg",
@@ -28,6 +29,9 @@ def setup_sidebar():
             "assets/img13.jpg"]
     random_image=random.choice(images)
     st.sidebar.image(random_image)
+    bu=st.sidebar.button("Reset", type="primary")
+    if bu:
+        st.rerun()
 
 def send_to_customer_service(debugging):
     print("We're sorry, but we can't identify customer.")
@@ -35,7 +39,7 @@ def send_to_customer_service(debugging):
         st.markdown("## We're sorry, but we can't identify you.")
 
 def send_to_language_selection(user_sub,user_name,debugging):
-    st.markdown(f"## Please choose your language {user_sub,user_name,debugging}.")
+    st.markdown(f"## Please choose your language.")
     language_select=st.selectbox(" ",options=languages.keys(), index=None)
     if language_select:
         language_iso=languages[language_select]
@@ -51,8 +55,8 @@ def send_to_level_selection(user_sub,user_name,user_native_language,debugging):
         print(f"## {user_native_language} {level_selected}.")
         datastore.add_user_level(user_sub,user_name,user_native_language,level_selected,debugging)
 
-def process_question(user_sub,user_name,level,question,language,debugging):
-    score=quizworld.ask_question(user_sub,user_name,question,language,level,debugging)
+def process_question(user_sub,user_name,level,question,audiofile,language,debugging):
+    score=quizworld.ask_question(user_sub,user_name,question,audiofile,language,level,debugging)
     if score>=PASSING_SCORE_VERBAL:
         if debugging:
             st.markdown(f"## Congratulations! You answered correctly.")
@@ -71,7 +75,9 @@ def process_question(user_sub,user_name,level,question,language,debugging):
             st.balloons()
             datastore.enable_english(user_sub,user_name,debugging)
     else:
-        st.markdown(f"# {score} < {PASSING_SCORE_VERBAL}")
+        if debugging:
+            st.markdown(f"## Sorry, but you answered incorrectly.")
+            st.markdown(f"# {score} < {PASSING_SCORE_VERBAL}")
     bu=st.button("Next Question")
     if bu:
         # TO-DO. Delete other state elements, including the transcript.
@@ -108,11 +114,17 @@ def run_once(debugging):
         return
     user_sub="google-"+user_info['sub']
     print(f"Got sub {user_sub}")
-    user_record=signon.datastore.get_user_row(user_sub,debugging)
+    user_df=datastore.get_user_row(user_sub,debugging)
+    if user_df is None:
+        if(debugging):
+            st.write(f"User DF is None. {user_info}")
+        send_to_customer_service(debugging)
+        return
+    user_record=user_df.to_dict()
     if user_record is None:
         if(debugging):
             st.write(f"User record is None. {user_info}")
-        send_to_customer_service()
+        send_to_customer_service(debugging)
         return
     user_name=user_record['name']
     if debugging:
@@ -120,11 +132,12 @@ def run_once(debugging):
     if 'selected_question' in st.session_state:
         # User is answering a question in progress; we can skip other steps.
         selected_question=st.session_state['selected_question']
+        audio_file=st.session_state['audio_file']
         user_sub=st.session_state['user_sub']
         user_name=st.session_state['user_name']
         selected_language=st.session_state['selected_language']
         highest_level=st.session_state['highest_level']
-        process_question(user_sub,user_name,highest_level,selected_question,selected_language,debugging) 
+        process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,debugging) 
         return
     #if debugging:
     print(f"For user {user_name}, got user record {user_record}")
@@ -132,6 +145,16 @@ def run_once(debugging):
         send_to_language_selection(user_sub,user_name,debugging)
         return
     user_native_language=user_record['language']
+    if user_native_language in languages.values():
+        if debugging:
+            st.markdown(f"## Found {user_native_language} for {user_name}")   
+    else:
+        if debugging:
+            st.markdown(f"## Found {user_native_language} for {user_name}") 
+        print(f"Didnt find langauge for {user_record}")
+        send_to_language_selection(user_sub,user_name,debugging)
+        return
+    
     df_user_lang=datastore.get_user_status(user_sub,debugging)
 
     if df_user_lang is None:
@@ -166,12 +189,14 @@ def run_once(debugging):
         st.markdown(f"## HLR: {highest_level}")
         st.dataframe(filtered_df)
     selected_question = random.choice(filtered_df['question'].unique())
+    audio_file=filtered_df[filtered_df['question']==selected_question]['audiofile'].iloc[0]
     st.session_state['selected_question']=selected_question
     st.session_state['user_sub']=user_sub
     st.session_state['user_name']=user_name
     st.session_state['selected_language']=selected_language
     st.session_state['highest_level']=highest_level
-    process_question(user_sub,user_name,highest_level,selected_question,selected_language,debugging)
+    st.session_state['audio_file']=audio_file
+    process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,debugging)
 
 def main():
     run_once(False)

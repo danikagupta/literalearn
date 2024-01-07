@@ -71,8 +71,8 @@ def get_user_row(subId,debugging):
         if row['sub']==subId:
             row_dict=row.to_dict()
             if debugging:
-                st.write(f"Found row-dict={row_dict}")
-            return row_dict
+                st.write(f"Found row={row}, row-dict={row_dict}")
+            return row
     return None
 
 def get_user_question_row(user_sub,language,question,debugging):
@@ -117,12 +117,12 @@ def get_user_question_answers(user_sub,language,level,debugging):
 
 def update_user_lang(subId,lang,debugging):
     print(f"Update user lang INPUT {subId} {lang} {debugging}}}")
-    row_dict=get_user_row(subId,debugging)
+    row=get_user_row(subId,debugging)
     params = {"tabId": "Sheet1"}
-    row_dict['language']=lang
+    row['language']=lang
     url=sheet_mapping["users"]
-    print(f"Update user lang Request {row_dict} URL {url}}}")
-    r = requests.put(url = url, params = params, json = row_dict)
+    print(f"Update user lang Request {row} URL {url}}}")
+    r = requests.put(url = url, params = params, json = row.to_dict())
     result = r.json()
     # if debugging:
     print(f"Update user lang returns {result}")
@@ -175,7 +175,7 @@ def add_questions_for_user(subId,name,questions,debugging):
     print(f"Add questions for user: INPUT {subId} {questions} {debugging}")
     rows=[]
     for index, question in questions.iterrows():
-        row=[subId,name,question['language'],question['level'],question['sentence'],'No']
+        row=[subId,name,question['language'],question['level'],question['sentence'],'No',question['audiofile']]
         rows.append(row)
     print(f"Add questions for user: ADDING {rows}")
     result=add_rows_to_sheet("status",rows,debugging)

@@ -9,6 +9,8 @@ from audio_recorder_streamlit import audio_recorder
 import os
 import json
 
+import cookiestore
+
 
 def transcribe_audio(file_path,language_iso,debugging):
     gcs_credentials = st.secrets["connections"]["gcs"]
@@ -76,24 +78,51 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
 
 
 
-def ask_question(user_sub,user_name, selected_question,language, level, debugging):
+def ask_question(user_sub,user_name, selected_question,audiofile,language, level, debugging):
     if debugging:
         st.markdown(f"## Ask Question: {selected_question} for user {user_sub}") 
     main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}  
     language_iso=language
     instruction=main_instruction[language_iso]
     sentence=selected_question
-    colA,colB,colC=st.columns(3)
-    colA.markdown(f"## 🎓: {user_name}")
-    colB.markdown(f"## 📖: {language_iso}")
-    colC.markdown(f"## 🏆: {level}")
+    colA,colB,colC,colD,colE=st.columns(5)
+    colA.markdown(f" 🎓: {user_name}")
+    colC.markdown(f" 📖: {language_iso}")
+    colE.markdown(f" 🏆: {level}")
+    st.divider()
     col1,col2=st.columns(2)
     col1.markdown(f"## {sentence}")
     # Single audio at this time; will investigate TTS. 
-    fname=os.path.join(os.getcwd(),"audiofiles","howAreYou_en.wav")
+    fname=os.path.join(os.getcwd(),"audiofiles",audiofile)
     af = open(fname, 'rb')
     audiobytes = af.read()
-    col2.audio(audiobytes, format="audio/wav")
+    button_id = "green_button"
+
+    button_css = f"""
+    <style>
+    #{button_id} {{
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+    }}
+    </style>
+    """
+
+# Inject custom CSS with the HTML
+    st.markdown(button_css, unsafe_allow_html=True)
+    bu = col2.button("🙋 Help",key=button_id)
+    if bu:
+        col2.audio(audiobytes, format="audio/wav")
+    # music_code=cookiestore.get_music_code(audiofile)
+    # st.markdown(music_code, unsafe_allow_html=True)
 
     path_myrecording = os.path.join(os.getcwd(),"audiofiles","myrecording.wav")
     audio_bytes = audio_recorder(text="")
