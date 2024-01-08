@@ -242,7 +242,7 @@ def get_i18n(key,lang,debugging):
     if len(df)>0:
         return df['phrase'].iloc[0]
     else:
-        return "No translation found"
+        return f"No translation found for {key},{lang}"
 
 def main():   
     print("Testing i18n")

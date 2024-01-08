@@ -38,7 +38,7 @@ def setup_sidebar_end():
             "assets/img13.jpg"]
     random_image=random.choice(images)
     st.sidebar.image(random_image)
-    bu=st.sidebar.button("Reset", type="primary")
+    bu=st.sidebar.button("🔁")
     if bu:
         st.rerun()
 
@@ -89,7 +89,7 @@ def process_question(user_sub,user_name,level,question,audiofile,language,langua
         if debugging:
             st.markdown(f"## Sorry, but you answered incorrectly.")
             st.markdown(f"# {score} < {PASSING_SCORE_VERBAL}")
-    bu=st.button("Next Question")
+    bu=st.button(datastore.get_i18n('nextQuestion',language,debugging), type="primary")
     if bu:
         # TO-DO. Delete other state elements, including the transcript.
         if 'selected_question' in st.session_state:

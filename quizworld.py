@@ -90,8 +90,8 @@ def ask_question(user_sub,user_name, selected_question,audiofile,language, level
     sentence=selected_question
     st.sidebar.write(f"{user_name} {inverted_lang[language_iso]} {level}")
     # st.divider()
-    st.markdown(f"# {instruction}")    
-    st.markdown(f"## {sentence}")
+    st.markdown(f"## {instruction}")    
+    st.markdown(f"# \"{sentence}\"")
     # Single audio at this time; will investigate TTS. 
     fname=os.path.join(os.getcwd(),"audiofiles",audiofile)
     af = open(fname, 'rb')
@@ -118,7 +118,9 @@ def ask_question(user_sub,user_name, selected_question,audiofile,language, level
 
 # Inject custom CSS with the HTML
     st.markdown(button_css, unsafe_allow_html=True)
-    bu = st.button("🙋 Help",key=button_id)
+    help_i18n=datastore.get_i18n('helpPlease',language_iso,debugging)
+    print(f"Help 18N is {help_i18n}")
+    bu = st.button(f"🙋 {help_i18n}",key=button_id)
     if bu:
         st.audio(audiobytes, format="audio/wav")
     # music_code=cookiestore.get_music_code(audiofile)
