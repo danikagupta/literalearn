@@ -8,6 +8,13 @@ import random
 import pandas as pd
 import math
 
+st.set_page_config(
+    page_title="LiteraLearn",
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 MAX_LEVEL=11
 PASSING_SCORE_VERBAL=60
 PASSING_SCORE_LANG=70
@@ -19,9 +26,11 @@ languages={"English":"en","हिंदी":"hi","മലയാളം":"ml","ස�
 level_select={"hi":"साफ़ से बोलें (level)","en":"What's your level?","ml":"വ്യക്തമായി സംസാരിക്കുക (level)","si":"පැහැදිලිව කතා කරන්න (level)"}
 levels=[1,2,3,4,5,6,7,8,9,10,11,12]
 
-def setup_sidebar():
+def setup_sidebar_start():
     st.sidebar.markdown("# LiteraLearn")
     st.sidebar.image("assets/icon128px-red.png")
+
+def setup_sidebar_end():
     images=["assets/img1.jpg","assets/img2.jpg","assets/img3.jpg",
             "assets/img4.jpg","assets/img5.jpg","assets/img6.jpg",
             "assets/img7.jpg","assets/img8.jpg","assets/img9.jpg",
@@ -55,38 +64,41 @@ def send_to_level_selection(user_sub,user_name,user_native_language,debugging):
         print(f"## {user_native_language} {level_selected}.")
         datastore.add_user_level(user_sub,user_name,user_native_language,level_selected,debugging)
 
-def process_question(user_sub,user_name,level,question,audiofile,language,debugging):
-    score=quizworld.ask_question(user_sub,user_name,question,audiofile,language,level,debugging)
+def process_question(user_sub,user_name,level,question,audiofile,language,languages,debugging):
+    score=quizworld.ask_question(user_sub,user_name,question,audiofile,language,level,languages,debugging)
     if score>=PASSING_SCORE_VERBAL:
+        st.write(datastore.get_i18n('correctAnswer',language,debugging))
         if debugging:
             st.markdown(f"## Congratulations! You answered correctly.")
-        st.image(GIF_URL)
+        st.image(GIF_URL,width=200)
         datastore.update_answer(user_sub,language,question,debugging)
         del st.session_state['selected_question']
         level_score=datastore.get_success_rate(user_sub,language,level,question,debugging)
         print(f"Checking language. Level score is {level_score} and level is {level} and passing score is {PASSING_SCORE_LANG}")
         if level_score>PASSING_SCORE_LANG:
-            st.markdown("Congratulations! You have passed this level. You will now move to the next level.")    
+            st.markdown(f"🎉 🎉 🎉  {datastore.get_i18n('levelUp',language,debugging)} 🎉 🎉 🎉 ")    
             st.balloons()
             if(level<MAX_LEVEL):
                 datastore.add_user_level(user_sub,user_name,language,level+1,debugging)
         if level_score>SCORE_ENGLISH_ENABLE:
-            st.markdown("Congratulations! You have passed the English Enablement level. You will now be able to answer questions in English.")
-            st.balloons()
+            #st.markdown("Congratulations! You have passed the English Enablement level. You will now be able to answer questions in English.")
+            st.snow()
             datastore.enable_english(user_sub,user_name,debugging)
     else:
+        st.write(datastore.get_i18n('wrongAnswer',language,debugging))
         if debugging:
             st.markdown(f"## Sorry, but you answered incorrectly.")
             st.markdown(f"# {score} < {PASSING_SCORE_VERBAL}")
     bu=st.button("Next Question")
     if bu:
         # TO-DO. Delete other state elements, including the transcript.
+        if 'selected_question' in st.session_state:
+            del st.session_state['selected_question']
         print("Rerunning due to Next Question")
         st.rerun()
     
 
 def run_once(debugging):
-    setup_sidebar()
     if debugging:
         st.write("# Hello world!! (from main Hello.py)")
     # cookiestore.cookie_ui()
@@ -137,7 +149,7 @@ def run_once(debugging):
         user_name=st.session_state['user_name']
         selected_language=st.session_state['selected_language']
         highest_level=st.session_state['highest_level']
-        process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,debugging) 
+        process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,languages,debugging) 
         return
     #if debugging:
     print(f"For user {user_name}, got user record {user_record}")
@@ -196,11 +208,14 @@ def run_once(debugging):
     st.session_state['selected_language']=selected_language
     st.session_state['highest_level']=highest_level
     st.session_state['audio_file']=audio_file
-    process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,debugging)
+    process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,languages,debugging)
 
 def main():
+    setup_sidebar_start()
     # datastore.main()
+
     run_once(False)
+    setup_sidebar_end()
 
 
 main()

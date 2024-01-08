@@ -84,10 +84,10 @@ def show_login(uri,languages,debugging):
         lang_select=[languages[x] for x in lang_list]
         print(f"Lang select is {lang_select} while lang_list is {lang_list}")
         tab1,tab2,tab3,tab4=st.tabs(lang_list)
-        tab1.markdown(login_instructions['en'])
-        tab2.markdown(login_instructions['hi'])
-        tab3.markdown(login_instructions['ml'])
-        tab4.markdown(login_instructions['si'])
+        tab1.markdown(datastore.get_i18n("frontPage",lang_select[0],debugging))
+        tab2.markdown(datastore.get_i18n("frontPage",lang_select[1],debugging))
+        tab3.markdown(datastore.get_i18n("frontPage",lang_select[2],debugging))
+        tab4.markdown(datastore.get_i18n("frontPage",lang_select[3],debugging))
 
 def main(languages,debugging):
     if debugging:

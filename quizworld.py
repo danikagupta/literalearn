@@ -10,6 +10,7 @@ import os
 import json
 
 import cookiestore
+import datastore
 
 
 def transcribe_audio(file_path,language_iso,debugging):
@@ -78,20 +79,19 @@ def function_print_similarity_score(str1: str, str2: str) -> str:
 
 
 
-def ask_question(user_sub,user_name, selected_question,audiofile,language, level, debugging):
+def ask_question(user_sub,user_name, selected_question,audiofile,language, level, languages, debugging):
     if debugging:
         st.markdown(f"## Ask Question: {selected_question} for user {user_sub}") 
     main_instruction={"hi":"साफ़ से बोलें","en":"Speak clearly","ml":"വ്യക്തമായി സംസാരിക്കുക","si":"පැහැදිලිව කතා කරන්න"}  
     language_iso=language
-    instruction=main_instruction[language_iso]
+    instruction=datastore.get_i18n('speakClearly',language_iso,debugging)
+    inverted_lang = {value: key for key, value in languages.items()}
+    #main_instruction[language_iso]
     sentence=selected_question
-    colA,colB,colC,colD,colE=st.columns(5)
-    colA.markdown(f" 🎓: {user_name}")
-    colC.markdown(f" 📖: {language_iso}")
-    colE.markdown(f" 🏆: {level}")
-    st.divider()
-    col1,col2=st.columns(2)
-    col1.markdown(f"## {sentence}")
+    st.sidebar.write(f"{user_name} {inverted_lang[language_iso]} {level}")
+    # st.divider()
+    st.markdown(f"# {instruction}")    
+    st.markdown(f"## {sentence}")
     # Single audio at this time; will investigate TTS. 
     fname=os.path.join(os.getcwd(),"audiofiles",audiofile)
     af = open(fname, 'rb')
@@ -118,9 +118,9 @@ def ask_question(user_sub,user_name, selected_question,audiofile,language, level
 
 # Inject custom CSS with the HTML
     st.markdown(button_css, unsafe_allow_html=True)
-    bu = col2.button("🙋 Help",key=button_id)
+    bu = st.button("🙋 Help",key=button_id)
     if bu:
-        col2.audio(audiobytes, format="audio/wav")
+        st.audio(audiobytes, format="audio/wav")
     # music_code=cookiestore.get_music_code(audiofile)
     # st.markdown(music_code, unsafe_allow_html=True)
 
