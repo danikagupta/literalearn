@@ -199,6 +199,7 @@ def run_once(debugging):
     process_question(user_sub,user_name,highest_level,selected_question,audio_file,selected_language,debugging)
 
 def main():
+    # datastore.main()
     run_once(False)
 
 

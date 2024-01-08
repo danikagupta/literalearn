@@ -6,6 +6,7 @@ sheet_mapping={
     "users": "https://v1.nocodeapi.com/gprof/google_sheets/ULJTWlUlxDbMDOzR",
     "sentences": "https://v1.nocodeapi.com/gprof/google_sheets/UXWnqHbJxMezIpoE",
     "status": "https://v1.nocodeapi.com/gprof/google_sheets/JozQVcMxjnDpkeAF",
+    "i18n": "https://v1.nocodeapi.com/gprof/google_sheets/UmHyRutchclatfdw",  
 }
 
 sheets=sheet_mapping.keys()
@@ -24,6 +25,7 @@ def get_sheet(sheet,debugging):
     df=pd.DataFrame(d)
     if debugging:
         print(result)
+        st.markdown(f" For sheet {sheet}, and url {url}, ")
         st.dataframe(df)
     return df
 
@@ -221,3 +223,31 @@ def enable_english(user_sub,user_name,debugging):
         print(f"Enable English: Enabling now...")
         result=add_user_level(user_sub,user_name,'en',5,debugging)
     return result
+
+@st.cache_data
+def get_i18n_sheet(debugging):
+    df=get_sheet("i18n",debugging)
+    return df
+
+def get_i18n(key,lang,debugging):
+    df=get_i18n_sheet(debugging)
+    if(debugging):
+        st.markdown("# i18n Initial")
+        st.dataframe(df)
+    df=df[df['key']==key]
+    df=df[df['lang']==lang]
+    if(debugging):
+        st.markdown("# i18n Final")
+        st.dataframe(df)
+    if len(df)>0:
+        return df['phrase'].iloc[0]
+    else:
+        return "No translation found"
+
+def main():   
+    print("Testing i18n")
+    keys={"frontPage","speakClearly","correctAnswer","wrongAnswer"}
+    langs={"en","hi","ml","si"}
+    for k in keys:
+        for l in langs:
+            print(f"i18n Testing {k} in {l} = {get_i18n(k,l,False)}")
